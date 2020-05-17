@@ -45,15 +45,11 @@ FusionEKF::~FusionEKF() {}
 
 void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 {
-  /**
-   * Initialization
-   */
   if (!is_initialized_)
   {
+    // Init
     // first measurement
-    cout << "EKF: " << endl;
     VectorXd x = VectorXd(4);
-    x << 1, 1, 1, 1;
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
     {
@@ -69,15 +65,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
       // the state variable velocities vx, vy
       x << px,
           py,
-          0,
-          0;
+          0.0,
+          0.0;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER)
     {
       x << measurement_pack.raw_measurements_[0],
           measurement_pack.raw_measurements_[1],
-          0,
-          0;
+          0.0,
+          0.0;
     }
 
     previous_timestamp_ = measurement_pack.timestamp_;
@@ -110,18 +106,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 
     return;
   }
-  /**
-   * Prediction
-   */
 
-  /**
-   * TODO: Update the state transition matrix F according to the new elapsed time.
-   * Time is measured in seconds.
-   * TODO: Update the process noise covariance matrix.
-   * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
-   */
-
-  float dt = previous_timestamp_ - measurement_pack.timestamp_ / 1000000.0;
+  // Prediction
+  float dt = (previous_timestamp_ - measurement_pack.timestamp_) / 1000000.0;
   previous_timestamp_ = measurement_pack.timestamp_;
 
   ekf_.F_(0, 2) = dt;
@@ -131,16 +118,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
   float dt_3 = dt_2 * dt;
   float dt_4 = dt_3 * dt;
 
+  ekf_.Q_ = MatrixXd(4, 4);
   ekf_.Q_ << dt_4 / 4 * noise_ax_, 0.0, dt_3 / 2 * noise_ax_, 0.0,
-             0.0, dt_4 / 4 * noise_ay_, 0.0, dt_3 / 3 * noise_ay_,
-             dt_3 / 2 * noise_ax_, 0.0, dt_2 * noise_ax_, 0.0,
-             0.0, dt_3 / 2 * noise_ay_, 0.0, dt_2 * noise_ay_;
+      0.0, dt_4 / 4 * noise_ay_, 0.0, dt_3 / 3 * noise_ay_,
+      dt_3 / 2 * noise_ax_, 0.0, dt_2 * noise_ax_, 0.0,
+      0.0, dt_3 / 2 * noise_ay_, 0.0, dt_2 * noise_ay_;
 
   ekf_.Predict();
 
-  /**
-   * Update
-   */
+  // Update
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
   {
     // Do extended kalman filter update here (Non-linear)
