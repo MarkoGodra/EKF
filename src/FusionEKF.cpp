@@ -24,6 +24,16 @@ FusionEKF::FusionEKF()
   H_laser_ = MatrixXd(2, 4);
   Hj_ = MatrixXd(3, 4);
 
+  // Initializing P
+  ekf_.P_ = MatrixXd(4, 4);
+  ekf_.P_ << 1, 0, 0, 0,
+             0, 1, 0, 0,
+             0, 0, 1000, 0,
+             0, 0, 0, 1000;
+
+  H_laser_ << 1, 0, 0, 0,
+              0, 1, 0, 0;
+
   //measurement covariance matrix - laser
   R_laser_ << 0.0225, 0,
       0, 0.0225;
@@ -98,8 +108,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
         0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0;
 
-    // TODO: Don't forget to add additional param here for radar R matrix
-    ekf_.Init(x, P, F, H_laser_, R_laser_, Q);
+    ekf_.Init(x, P, F, H_laser_, R_laser_, R_radar_, Q);
 
     // done initializing, no need to predict or update
     is_initialized_ = true;
@@ -108,7 +117,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
   }
 
   // Prediction
-  float dt = (previous_timestamp_ - measurement_pack.timestamp_) / 1000000.0;
+  float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
   previous_timestamp_ = measurement_pack.timestamp_;
 
   ekf_.F_(0, 2) = dt;

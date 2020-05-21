@@ -4,8 +4,12 @@
 #include <vector>
 #include "Eigen/Dense"
 
-class Tools {
- public:
+// TODO: Remove this
+#include <iostream>
+
+class Tools
+{
+public:
   /**
    * Constructor.
    */
@@ -19,14 +23,25 @@ class Tools {
   /**
    * A helper method to calculate RMSE.
    */
-  Eigen::VectorXd CalculateRMSE(const std::vector<Eigen::VectorXd> &estimations, 
-                                const std::vector<Eigen::VectorXd> &ground_truth);
+  static Eigen::VectorXd CalculateRMSE(const std::vector<Eigen::VectorXd> &estimations,
+                                       const std::vector<Eigen::VectorXd> &ground_truth);
 
   /**
    * A helper method to calculate Jacobians.
    */
-  Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd& x_state);
+  static Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd &x_state);
 
+    /**
+   * Utility function that converts state from cartesian to polar coordinate sys
+   * @param state state matrix
+   */
+  static Eigen::VectorXd ConvertCartesianToPolar(const Eigen::VectorXd &state);
+
+  /**
+   * Utlity function that normalizes angle to {-pi, pi} range
+   * @param angle Angle that shall be normalized
+   */
+  static void NormalizeAngle(float &angle);
 };
 
-#endif  // TOOLS_H_
+#endif // TOOLS_H_
