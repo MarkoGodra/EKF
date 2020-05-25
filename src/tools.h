@@ -4,9 +4,6 @@
 #include <vector>
 #include "Eigen/Dense"
 
-// TODO: Remove this
-#include <iostream>
-
 class Tools
 {
 public:
@@ -31,7 +28,7 @@ public:
    */
   static Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd &x_state);
 
-    /**
+  /**
    * Utility function that converts state from cartesian to polar coordinate sys
    * @param state state matrix
    */
@@ -41,7 +38,7 @@ public:
    * Utlity function that normalizes angle to {-pi, pi} range
    * @param angle Angle that shall be normalized
    */
-  static void NormalizeAngle(float &angle);
+  static void NormalizeAngle(double &angle);
 };
 
 #endif // TOOLS_H_

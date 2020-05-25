@@ -74,48 +74,44 @@ MatrixXd Tools::CalculateJacobian(const VectorXd &x_state)
 // Actually represents h(x')
 VectorXd Tools::ConvertCartesianToPolar(const VectorXd &state)
 {
-  const float px = state(0);
-  const float py = state(1);
-  const float vx = state(2);
-  const float vy = state(3);
+   const float px = state(0);
+   const float py = state(1);
+   const float vx = state(2);
+   const float vy = state(3);
 
-  float rho;
-  float phi;
-  float rho_dot;
+   float rho;
+   float phi;
+   float rho_dot;
 
-  rho = sqrt(px * px + py * py);
-  phi = std::atan2(py, px);
+   rho = sqrt(px * px + py * py);
+   phi = std::atan2(py, px);
 
-  NormalizeAngle(phi);
+   // Avoid zero divison
+   // Rho cannot be negative value
+   if (rho < 0.000001)
+   {
+      rho = 0.000001;
+   }
 
-  // Avoid zero divison
-  if (rho < 0.000001)
-  {
-    std::cout << "Very small number" << std::endl;
-    rho = 0.000001;
-  }
+   rho_dot = (px * vx + py * vy) / rho;
 
-  rho_dot = (px * vx + py * vy) / rho;
+   VectorXd return_value = VectorXd(3);
+   return_value << rho, phi, rho_dot;
 
-  VectorXd return_value = VectorXd(3);
-  return_value << rho, phi, rho_dot;
-
-  return return_value;
+   return return_value;
 }
 
-void Tools::NormalizeAngle(float &angle)
+void Tools::NormalizeAngle(double &angle)
 {
-  std::cout << "Entered here" << std::endl;
-  while (angle > M_PI || angle < -M_PI)
-  {
-    std::cout << "Normalizing" << std::endl;
-    if (angle > M_PI)
-    {
-      angle -= M_PI;
-    }
-    else
-    {
-      angle += M_PI;
-    }
-  }
+   while (angle > M_PI || angle < -M_PI)
+   {
+      if (angle > M_PI)
+      {
+         angle -= M_PI;
+      }
+      else
+      {
+         angle += M_PI;
+      }
+   }
 }

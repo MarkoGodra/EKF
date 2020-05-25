@@ -27,12 +27,12 @@ FusionEKF::FusionEKF()
   // Initializing P
   ekf_.P_ = MatrixXd(4, 4);
   ekf_.P_ << 1, 0, 0, 0,
-             0, 1, 0, 0,
-             0, 0, 1000, 0,
-             0, 0, 0, 1000;
+      0, 1, 0, 0,
+      0, 0, 1000, 0,
+      0, 0, 0, 1000;
 
   H_laser_ << 1, 0, 0, 0,
-              0, 1, 0, 0;
+      0, 1, 0, 0;
 
   //measurement covariance matrix - laser
   R_laser_ << 0.0225, 0,
@@ -108,7 +108,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
         0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0;
 
-    ekf_.Init(x, P, F, H_laser_, R_laser_, R_radar_, Q);
+    ekf_.Init(x, P, F, Q);
 
     // done initializing, no need to predict or update
     is_initialized_ = true;
@@ -126,30 +126,36 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
   float dt_2 = dt * dt;
   float dt_3 = dt_2 * dt;
   float dt_4 = dt_3 * dt;
+  float dt_4_div_4 = dt_4 / 4.0;
+  float dt_3_div_2 = dt_3 / 2.0;
 
   ekf_.Q_ = MatrixXd(4, 4);
-  ekf_.Q_ << dt_4 / 4 * noise_ax_, 0.0, dt_3 / 2 * noise_ax_, 0.0,
-      0.0, dt_4 / 4 * noise_ay_, 0.0, dt_3 / 3 * noise_ay_,
-      dt_3 / 2 * noise_ax_, 0.0, dt_2 * noise_ax_, 0.0,
-      0.0, dt_3 / 2 * noise_ay_, 0.0, dt_2 * noise_ay_;
+  ekf_.Q_ << dt_4_div_4 * noise_ax_, 0.0, dt_3_div_2 * noise_ax_, 0.0,
+      0.0, dt_4_div_4 * noise_ay_, 0.0, dt_3_div_2 * noise_ay_,
+      dt_3_div_2 * noise_ax_, 0.0, dt_2 * noise_ax_, 0.0,
+      0.0, dt_3_div_2 * noise_ay_, 0.0, dt_2 * noise_ay_;
 
   ekf_.Predict();
 
   // Update
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
   {
+    ekf_.R_ = R_radar_;
+    ekf_.H_ = Tools::CalculateJacobian(ekf_.x_);
+
     // Do extended kalman filter update here (Non-linear)
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
   }
   else
   {
+    ekf_.R_ = R_laser_;
+    ekf_.H_ = H_laser_;
+
     // Do kalman filter update here (Linear)
     ekf_.Update(measurement_pack.raw_measurements_);
   }
 
   // print the output
-  std::cout << "===============================" << std::endl;
   std::cout << "x_ = " << ekf_.x_ << std::endl;
   std::cout << "P_ = " << ekf_.P_ << std::endl;
-  std::cout << "===============================" << std::endl;
 }
