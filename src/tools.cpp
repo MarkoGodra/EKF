@@ -46,15 +46,15 @@ MatrixXd Tools::CalculateJacobian(const VectorXd &x_state)
 {
    MatrixXd Hj(3, 4);
    // recover state parameters
-   float px = x_state(0);
-   float py = x_state(1);
-   float vx = x_state(2);
-   float vy = x_state(3);
+   double px = x_state(0);
+   double py = x_state(1);
+   double vx = x_state(2);
+   double vy = x_state(3);
 
    // pre-compute a set of terms to avoid repeated calculation
-   float c1 = px * px + py * py;
-   float c2 = sqrt(c1);
-   float c3 = (c1 * c2);
+   double c1 = px * px + py * py;
+   double c2 = sqrt(c1);
+   double c3 = (c1 * c2);
 
    // check division by zero
    if (fabs(c1) < 0.0001)
@@ -74,14 +74,14 @@ MatrixXd Tools::CalculateJacobian(const VectorXd &x_state)
 // Actually represents h(x')
 VectorXd Tools::ConvertCartesianToPolar(const VectorXd &state)
 {
-   const float px = state(0);
-   const float py = state(1);
-   const float vx = state(2);
-   const float vy = state(3);
+   const double px = state(0);
+   const double py = state(1);
+   const double vx = state(2);
+   const double vy = state(3);
 
-   float rho;
-   float phi;
-   float rho_dot;
+   double rho;
+   double phi;
+   double rho_dot;
 
    rho = sqrt(px * px + py * py);
    phi = std::atan2(py, px);
